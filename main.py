@@ -2,8 +2,8 @@ import pygame
 import requests
 import json
 
-WIDTH =  100
-HEIGHT = 100
+WIDTH =  50
+HEIGHT = 50
 margin = 5
 SIZE = 10
 
@@ -25,7 +25,6 @@ COLORS = {
 }
 
 board = [ ["WHITE"] * WIDTH for i in range(HEIGHT) ]
-
 def main():
     '''
     Main loop of the game
@@ -36,10 +35,17 @@ def main():
     CLOCK = pygame.time.Clock()
     SCREEN.fill(BLACK)
     count = 0
+    state = 0
 
     c_Pos_Screen = [0, 0]
     c_Pos_Panel = [1040, 100]
     s_Color = "BLACK"
+
+    try:
+        getCurrentBoard(state)
+    except ValueError:
+        print("Dedee")
+
 
     mode = True
     while True:
@@ -51,6 +57,10 @@ def main():
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 button = pygame.key.name(event.key)
+                # Test
+                if button =="e" or button == "E":
+                    getCurrentBoard(state)
+                
                 if button == "x" or button == "X":
                     if mode:
                         print(len(COLORS))
@@ -61,7 +71,6 @@ def main():
                     else:
                         x_C, y_C = turnCoordsToIndex(c_Pos_Screen[0], c_Pos_Screen[1])
                         board[x_C][y_C] = s_Color 
-                        print("Sending")
 
                 if button == "p" or button == "P":
                     mode = not mode
@@ -77,7 +86,7 @@ def main():
                         if c_Pos_Panel[1] < 220:
                             c_Pos_Panel[1] += SIZE * 2
                     else:
-                        if c_Pos_Screen[1] < 990:
+                        if c_Pos_Screen[1] < SIZE * HEIGHT:
                             c_Pos_Screen[1] += SIZE
                 elif button == "left":
                     if not mode:
@@ -89,8 +98,6 @@ def main():
                         if c_Pos_Screen[0] < 990:
                             c_Pos_Screen[0] += SIZE
                 
-                print("Screen: ", c_Pos_Screen)
-                print("Panel: ", c_Pos_Panel)
 
         drawCursors(c_Pos_Panel, c_Pos_Screen, s_Color)
         pygame.display.update()
@@ -126,15 +133,33 @@ def drawGrid():
         for y in range(HEIGHT):
             rect = pygame.Rect(x * SIZE + 1, y * SIZE + 1,
                     SIZE, SIZE)
-
+            # print(board)
             pygame.draw.rect(SCREEN, COLORS[board[x][y]], rect, 0)
+
             pygame.draw.rect(SCREEN, "BLACK", rect, 1)
 
 
 def getCurrentBoard(state):
     
-    r = requests.get(url = URL + '?state=' + state)
-    r.status_code
+    payload = {"state" : state}
+    r = requests.get(url = URL, params=payload)
+    if r.status_code == 200:
+        # Dunno why this needs to be done twice xd
+        r_dict = json.loads(r.text)
+        r_dict = json.loads(r_dict)
+        if "is_whole_board" in r_dict:
+            print(len(r_dict))
+            for state in r_dict.keys():
+                if state != "is_whole_board":
+                    for x in range(WIDTH):
+                        for y in range(HEIGHT):
+                            if board[x][y] != r_dict[state]:
+                                board[x][y] = r_dict[state][x][y]
+
+        else:
+            return []
+    else:
+        print("open broker")
 
 def postNewChange(state, x, y, color):
 
