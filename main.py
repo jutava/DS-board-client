@@ -42,7 +42,7 @@ def main():
     s_Color = "BLACK"
 
     try:
-        getCurrentBoard(state)
+        state = getCurrentBoard(state)
     except ValueError:
         print("Dedee")
 
@@ -58,8 +58,8 @@ def main():
             if event.type == pygame.KEYDOWN:
                 button = pygame.key.name(event.key)
                 # Test
-                if button =="e" or button == "E":
-                    getCurrentBoard(state)
+                if button =="r" or button == "R":
+                    state = getCurrentBoard(state)
                 
                 if button == "x" or button == "X":
                     if mode:
@@ -71,6 +71,8 @@ def main():
                     else:
                         x_C, y_C = turnCoordsToIndex(c_Pos_Screen[0], c_Pos_Screen[1])
                         board[x_C][y_C] = s_Color 
+                        # Sends
+                        postNewChange(state, x_C, y_C, s_Color)
 
                 if button == "p" or button == "P":
                     mode = not mode
@@ -149,15 +151,16 @@ def getCurrentBoard(state):
         r_dict = json.loads(r_dict)
         if "is_whole_board" in r_dict:
             print(len(r_dict))
-            for state in r_dict.keys():
-                if state != "is_whole_board":
+            for s in r_dict.keys():
+                if s != "is_whole_board":
                     for x in range(WIDTH):
                         for y in range(HEIGHT):
-                            if board[x][y] != r_dict[state]:
-                                board[x][y] = r_dict[state][x][y]
+                            if board[x][y] != r_dict[s]:
+                                board[x][y] = r_dict[s][x][y]
+                    return int(s)
 
         else:
-            return []
+            return 0
     else:
         print("open broker")
 
