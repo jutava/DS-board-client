@@ -59,6 +59,7 @@ def main():
                 button = pygame.key.name(event.key)
                 # Test
                 if button =="r" or button == "R":
+                    print(state)
                     state = getCurrentBoard(state)
                 
                 if button == "x" or button == "X":
@@ -70,9 +71,11 @@ def main():
                         mode = not mode
                     else:
                         x_C, y_C = turnCoordsToIndex(c_Pos_Screen[0], c_Pos_Screen[1])
-                        board[x_C][y_C] = s_Color 
                         # Sends
-                        postNewChange(state, x_C, y_C, s_Color)
+                        if postNewChange(state, x_C, y_C, s_Color):
+                            board[x_C][y_C] = s_Color
+                        else:
+                            state = getCurrentBoard(state)
 
                 if button == "p" or button == "P":
                     mode = not mode
@@ -150,7 +153,6 @@ def getCurrentBoard(state):
         r_dict = json.loads(r.text)
         r_dict = json.loads(r_dict)
         if "is_whole_board" in r_dict:
-            print(len(r_dict))
             for s in r_dict.keys():
                 if s != "is_whole_board":
                     for x in range(WIDTH):
@@ -158,9 +160,17 @@ def getCurrentBoard(state):
                             if board[x][y] != r_dict[s]:
                                 board[x][y] = r_dict[s][x][y]
                     return int(s)
+        
+        elif not r_dict:
+            return state
 
         else:
-            return 0
+            s = int(max(list(r_dict.keys())))
+            for k in list(r_dict.keys()):
+                board[r_dict[k]['x']][r_dict[k]['y']] = r_dict[k]['color']
+            return s            
+
+            
     else:
         print("open broker")
 
@@ -175,7 +185,11 @@ def postNewChange(state, x, y, color):
 
     URL = 'http://localhost:8080'
     r = requests.post(url = URL, data=json.dumps(data))
-    print(r)
+    if r.status_code == 200:
+        return True
+    else:
+        return False
+    
     
 
 main()
