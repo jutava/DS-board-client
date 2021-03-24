@@ -73,6 +73,7 @@ def main():
                         x_C, y_C = turnCoordsToIndex(c_Pos_Screen[0], c_Pos_Screen[1])
                         # Sends
                         if postNewChange(state, x_C, y_C, s_Color):
+                            state = state + 1
                             board[x_C][y_C] = s_Color
                         else:
                             state = getCurrentBoard(state)
@@ -152,6 +153,7 @@ def getCurrentBoard(state):
         # Dunno why this needs to be done twice xd
         r_dict = json.loads(r.text)
         r_dict = json.loads(r_dict)
+        
         if "is_whole_board" in r_dict:
             for s in r_dict.keys():
                 if s != "is_whole_board":
@@ -163,7 +165,6 @@ def getCurrentBoard(state):
         
         elif not r_dict:
             return state
-
         else:
             s = int(max(list(r_dict.keys())))
             for k in list(r_dict.keys()):
