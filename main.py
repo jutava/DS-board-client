@@ -37,6 +37,7 @@ def main():
     count = 0
     state = 0
 
+    ts_Refresh = 0
     c_Pos_Screen = [0, 0]
     c_Pos_Panel = [1040, 100]
     s_Color = "BLACK"
@@ -49,6 +50,7 @@ def main():
 
     mode = True
     while True:
+        ts_Refresh += 1
         drawColorPanel()
         drawGrid()
         for event in pygame.event.get():
@@ -104,7 +106,9 @@ def main():
                         if c_Pos_Screen[0] < 990:
                             c_Pos_Screen[0] += SIZE
                 
-
+        if ts_Refresh >= 1000:
+            state = getCurrentBoard(state)
+            ts_Refresh = 0
         drawCursors(c_Pos_Panel, c_Pos_Screen, s_Color)
         pygame.display.update()
 
